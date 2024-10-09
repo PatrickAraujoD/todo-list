@@ -14,5 +14,12 @@ class Todo(Base):
     self.title = title
   
   def __repr__(self):
-    return '{ "id": self.id, "title": self.title, "complete": self.complete }'
+    return f'{{ "id": {self.id}, "title": "{self.title}", "complete": {self.complete} }}'
+  
+  def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "complete": self.complete
+        }
   
