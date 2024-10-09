@@ -1,3 +1,6 @@
+from typing import Union
+
+from sqlalchemy import update
 from infra.configs.handler_db import HandlerDb
 from infra.models.todo import Todo
 
@@ -19,5 +22,28 @@ class TodoRepository:
       except:
         connection.session.rollback()
         raise
+      finally:
+        connection.session.close()
+        
+  def get_todo_by_id(self, id_todo: int) -> Union[Todo, None]:
+    with HandlerDb() as connection:
+      todo = connection.session.query(Todo).filter_by(id=id_todo).first()
+      return todo
+  
+  def update_todo_complete(self, id_todo: int,  complete: bool) -> bool:
+    with HandlerDb() as connection:
+      try:
+        stmt = (
+          update(Todo)
+          .where(Todo.id == id_todo)
+          .values(complete=complete)
+        )
+        connection.session.execute(stmt)
+        connection.session.commit()
+        return True
+      except Exception as e:
+        print(e)
+        connection.session.rollback()
+        return False
       finally:
         connection.session.close()
