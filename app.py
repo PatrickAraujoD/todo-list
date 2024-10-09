@@ -1,13 +1,31 @@
 from flask import Flask, jsonify, request
+from flasgger import Swagger
 
 from infra.repositories.todo_repository import TodoRepository
 
 app = Flask(__name__) # __name__ == __main__
 
+swagger = Swagger(app)
+
 todo_repository = TodoRepository()
 
 @app.route('/create', methods=['POST'])
 def create_todo():
+  """
+    Criação de uma nova tarefa
+    ---
+    parameters:
+      - name: title
+        in: formData
+        type: string
+        required: true
+        description: Titulo da tarefa
+    responses:
+      200:
+        description: Tarefa criada com sucesso
+      400:
+        description: Parametro não informado
+  """
   data: any = request.form
   required_fields = ['title']
   
@@ -22,6 +40,30 @@ def create_todo():
 
 @app.route('/list')
 def list_todos():
+  """
+    List all todos
+    ---
+    responses:
+      200:
+        description: Lista com todas as tarefas
+        schema:
+          type: object
+          properties:
+            todos:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: ID da tarefa
+                  title:
+                    type: string
+                    description: titulo da tarefa
+                  complete:
+                    type: boolean
+                    description: status da tararefa que foi finalizada
+  """
   todos = todo_repository.get_all_todos()
   todos = [t.to_dict() for t in todos]
 
@@ -29,6 +71,34 @@ def list_todos():
 
 @app.route('/update/<int:id_todo>', methods=['PUT'])
 def update_todo(id_todo):
+  """
+    Atualização do status da tarefa
+    ---
+    parameters:
+      - name: id_todo
+        in: path
+        type: integer
+        required: true
+        description: O id da tarefa que deseja atualizar
+      - name: complete
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            complete:
+              type: boolean
+              description: novo status complete
+    responses:
+      200:
+        description: tarefa atualizada com sucesso
+      400:
+        description: parâmetro inválido
+      404:
+        description: tarefa não encontrada
+      500:
+        description: Error do lado do servidor
+  """
   data = request.get_json()
   required_fields = ['complete']
   
@@ -52,6 +122,23 @@ def update_todo(id_todo):
 
 @app.route('/delete/<int:id_todo>', methods=["DELETE"])
 def delete_todo(id_todo):
+  """
+    Delete a todo
+    ---
+    parameters:
+      - name: id_todo
+        in: path
+        type: integer
+        required: true
+        description: O id da tarefa para deleta-la
+    responses:
+      200:
+        description: tarefa deletada com sucesso
+      404:
+        description: tarefa não encontrada
+      500:
+        description: Error do lado do servidor
+  """
   todo = todo_repository.get_todo_by_id(id_todo)
   
   if not todo:
