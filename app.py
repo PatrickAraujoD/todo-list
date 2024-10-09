@@ -1,8 +1,5 @@
 from flask import Flask, jsonify, request
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 
-from configs import configs_env
 from infra.repositories.todo_repository import TodoRepository
 
 app = Flask(__name__) # __name__ == __main__
@@ -42,7 +39,7 @@ def update_todo(id_todo):
   todo = todo_repository.get_todo_by_id(id_todo)
   
   if not todo:
-    return jsonify({"error": "Todo not found"}), 404
+    return jsonify({"error": "Tarefa não foi encontrada"}), 404
   
   complete = data.get('complete')
   
@@ -51,7 +48,21 @@ def update_todo(id_todo):
   if not is_save:
     return jsonify({"error": "Não foi possível finalizar a tarefa"}), 500
 
-  return jsonify({"message": "atualizado com sucesso!"})
+  return jsonify({"message": "atualizado com sucesso!"}), 200
+
+@app.route('/delete/<int:id_todo>', methods=["DELETE"])
+def delete_todo(id_todo):
+  todo = todo_repository.get_todo_by_id(id_todo)
+  
+  if not todo:
+    return jsonify({"error": "Tarefa não foi encontrada"}), 404
+
+  deleted = todo_repository.delete_todo(todo)
+  
+  if not deleted:
+    return jsonify({"error": "Não foi possivel deletar a tarefa"}), 500
+  
+  return jsonify({"message": "Tarefa deletada com sucesso"}), 200
 
 if __name__ == '__main__':
   app.run(debug=True, host="localhost", port="4000")
