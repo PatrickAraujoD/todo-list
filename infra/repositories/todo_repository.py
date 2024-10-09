@@ -47,3 +47,15 @@ class TodoRepository:
         return False
       finally:
         connection.session.close()
+        
+  def delete_todo(self, todo: Todo) -> bool:
+    with HandlerDb() as connection:
+      try:
+        connection.session.delete(todo)
+        connection.session.commit()
+        return True
+      except:
+        connection.session.rollback()
+        return False
+      finally:
+        connection.session.close()
