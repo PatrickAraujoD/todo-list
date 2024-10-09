@@ -30,5 +30,28 @@ def list_todos():
 
   return jsonify({"todos": todos}), 200
 
+@app.route('/update/<int:id_todo>', methods=['PUT'])
+def update_todo(id_todo):
+  data = request.get_json()
+  required_fields = ['complete']
+  
+  for field in required_fields:
+    if field not in data:
+      return jsonify({"error": "Invalid Param: {field}"}), 400
+
+  todo = todo_repository.get_todo_by_id(id_todo)
+  
+  if not todo:
+    return jsonify({"error": "Todo not found"}), 404
+  
+  complete = data.get('complete')
+  
+  is_save = todo_repository.update_todo_complete(id_todo, complete)
+  
+  if not is_save:
+    return jsonify({"error": "Não foi possível finalizar a tarefa"}), 500
+
+  return jsonify({"message": "atualizado com sucesso!"})
+
 if __name__ == '__main__':
   app.run(debug=True, host="localhost", port="4000")
