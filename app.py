@@ -4,10 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 from configs import configs_env
 from infra.repositories.todo_repository import TodoRepository
-from routes import initialize_routes
 
 app = Flask(__name__) # __name__ == __main__
-initialize_routes(app)
 
 todo_repository = TodoRepository()
 
@@ -24,6 +22,13 @@ def create_todo():
   
   todo_repository.create_todo(title)
   return jsonify({"message": "deu certo"}), 200
+
+@app.route('/list')
+def list_todos():
+  todos = todo_repository.get_all_todos()
+  todos = [t.to_dict() for t in todos]
+
+  return jsonify({"todos": todos}), 200
 
 if __name__ == '__main__':
   app.run(debug=True, host="localhost", port="4000")
